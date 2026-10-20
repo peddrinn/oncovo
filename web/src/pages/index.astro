@@ -1,0 +1,435 @@
+---
+// src/pages/index.astro
+// Frontend Astro do Oncovo com aparência herdada do front antigo e integração com a API /api/search.
+---
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Oncovo: busca local de lugares, eventos e experiências em Belo Horizonte."
+    />
+    <title>oncovô?</title>
+  </head>
+
+  <body class="bg-amber-50 text-black flex min-h-screen flex-col antialiased">
+    <header class="container mx-auto flex max-w-4xl items-center justify-center px-4 pb-4 pt-8">
+      <a href="/" aria-label="Página inicial do Oncovo" class="block">
+        <img
+          src="/logo.png"
+          onerror="this.onerror=null; this.src='/images/logo1.png';"
+          alt="Oncovô?"
+          class="h-auto w-72 max-w-[86vw] sm:w-80 md:w-96"
+          loading="eager"
+        />
+      </a>
+    </header>
+
+    <main class="container mx-auto max-w-4xl flex-grow px-4 py-8">
+      <section class="text-center">
+        <p class="mx-auto mb-6 max-w-2xl text-base font-semibold text-red-600 md:text-lg">
+          Descubra lugares, eventos e rolês em BH.
+        </p>
+
+        <form id="search-form" class="mx-auto max-w-3xl" autocomplete="off">
+          <label for="message" class="sr-only">Buscar lugares e eventos em BH</label>
+          <input
+            type="text"
+            id="message"
+            name="q"
+            placeholder="Qual rolê tá procurando em BH?"
+            class="mb-4 w-full rounded-lg border-2 border-orange-100 bg-orange-50 p-4 text-base shadow-sm outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 md:text-lg"
+            required
+          />
+
+          <button
+            type="submit"
+            id="message-btn"
+            class="rounded-xl bg-red-600 px-6 py-3 font-bold uppercase text-white transition hover:bg-red-800 disabled:cursor-wait disabled:opacity-80"
+          >
+            <span id="button-label">Procurar</span>
+          </button>
+        </form>
+
+        <div class="mx-auto mt-5 flex max-w-3xl flex-wrap justify-center gap-2" aria-label="Sugestões de busca">
+          <button type="button" data-query="eventos hoje" class="quick-search">Hoje</button>
+          <button type="button" data-query="eventos fim de semana" class="quick-search">Fim de semana</button>
+          <button type="button" data-query="gratuito" class="quick-search">Gratuito</button>
+          <button type="button" data-query="música ao vivo" class="quick-search">Música ao vivo</button>
+          <button type="button" data-query="bar" class="quick-search">Bar</button>
+          <button type="button" data-query="restaurante" class="quick-search">Restaurante</button>
+          <button type="button" data-query="criança" class="quick-search">Família</button>
+        </div>
+      </section>
+
+      <section class="py-8 text-black" aria-live="polite" aria-busy="false">
+        <div id="response" class="w-full rounded-xl bg-orange-50 p-4">
+          <div class="text-center">
+            <p class="text-lg font-bold text-red-600">Busque do seu jeito.</p>
+            <p class="mt-2 text-sm text-neutral-700 md:text-base">
+              Exemplos: “pagode hoje”, “bar em Santa Tereza”, “restaurante com música ao vivo” ou “evento gratuito”.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-auto bg-amber-50 py-4 text-white">
+      <div class="container mx-auto flex max-w-4xl flex-col items-center justify-between px-4 md:flex-row">
+        <div class="mb-4 md:mb-0">
+          <a href="contato.html#ajude-nos" class="text-red-600 hover:underline">Ajude-nos</a>
+        </div>
+        <div class="mb-4 md:mb-0">
+          <a href="contato.html#sobre-nos" class="text-red-600 hover:underline">Sobre Nós</a>
+        </div>
+        <div class="mb-4 md:mb-0">
+          <a href="contato.html#precos" class="text-red-600 hover:underline">Preços</a>
+        </div>
+        <div>
+          <a href="contato.html#contato" class="text-red-600 hover:underline">Contato</a>
+        </div>
+      </div>
+      <div class="container mx-auto mt-4 max-w-4xl px-4 text-center text-red-600">
+        <p>© 2026 Oncovo?. Todos os direitos reservados.</p>
+      </div>
+    </footer>
+
+    <style is:global>
+      .hidden {
+        display: none;
+      }
+
+      * {
+        font-size: 100%;
+        font-family: "Nefelibata Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      #typing-message {
+        font-size: 18px;
+        font-weight: bold;
+        color: #ff4500;
+        margin-top: 20px;
+      }
+
+      @keyframes typing {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      @keyframes blink {
+        from,
+        to {
+          border-color: transparent;
+        }
+        50% {
+          border-color: black;
+        }
+      }
+
+      #typing-text {
+        display: inline-block;
+        border-right: 2px solid;
+        white-space: nowrap;
+        overflow: hidden;
+        animation: typing 2s steps(20, end), blink 0.5s step-end infinite;
+      }
+
+      .quick-search {
+        border-radius: 9999px;
+        border: 1px solid rgb(248 113 113 / 0.35);
+        background: rgb(255 247 237);
+        padding: 0.5rem 0.85rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: rgb(220 38 38);
+        transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+      }
+
+      .quick-search:hover {
+        background: rgb(254 226 226);
+        border-color: rgb(220 38 38);
+        transform: translateY(-1px);
+      }
+
+      .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    </style>
+
+    <script>
+      const searchForm = document.getElementById("search-form");
+      const messageInput = document.getElementById("message");
+      const responseEl = document.getElementById("response");
+      const messageBtn = document.getElementById("message-btn");
+      const buttonLabel = document.getElementById("button-label");
+      const liveSection = responseEl?.closest("section");
+      const quickSearchButtons = document.querySelectorAll("[data-query]");
+
+      // const API_URL = import.meta.env.PUBLIC_API_URL || "/api/search";
+      const API_URL = "http://localhost:8787/api/search" || "/api/search";
+      
+      const DEFAULT_BUTTON_TEXT = "Procurar";
+      let typingInterval;
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (character) => {
+          const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#039;",
+          };
+          return entities[character];
+        });
+      }
+
+      function safeUrl(value) {
+        if (!value || typeof value !== "string") return "";
+
+        try {
+          const url = new URL(value, window.location.origin);
+          if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+          return url.href;
+        } catch {
+          return "";
+        }
+      }
+
+      function formatDate(value) {
+        if (!value) return "";
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return String(value);
+
+        return new Intl.DateTimeFormat("pt-BR", {
+          weekday: "short",
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+          .format(date)
+          .replace(",", " ·");
+      }
+
+      function normalizeTags(tags) {
+        if (!tags) return [];
+
+        if (Array.isArray(tags)) {
+          return tags.filter(Boolean).map(String);
+        }
+
+        if (typeof tags === "string") {
+          try {
+            const parsed = JSON.parse(tags);
+            if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
+          } catch {
+            return tags
+              .split(/[,;|]/)
+              .map((tag) => tag.trim())
+              .filter(Boolean);
+          }
+        }
+
+        return [];
+      }
+
+      function buildMapsUrl(item) {
+        const query = [item.address, item.neighborhood, "Belo Horizonte"]
+          .filter(Boolean)
+          .join(", ");
+
+        if (!query.trim()) return "";
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+      }
+
+      function renderTypeLabel(type) {
+        if (type === "event") return "Evento";
+        if (type === "place") return "Lugar";
+        return type ? String(type) : "Experiência";
+      }
+
+      function renderItem(item) {
+        const title = escapeHtml(item.title || "Experiência sem título");
+        const subtitle = escapeHtml(item.subtitle || "");
+        const description = escapeHtml(item.description || "");
+        const neighborhood = escapeHtml(item.neighborhood || "");
+        const address = escapeHtml(item.address || "");
+        const sourceLabel = escapeHtml(item.source_label || "Fonte original");
+        const priceLabel = escapeHtml(item.price_label || "");
+        const startsAt = escapeHtml(formatDate(item.starts_at));
+        const typeLabel = escapeHtml(renderTypeLabel(item.type));
+        const tags = normalizeTags(item.tags).slice(0, 5);
+        const sourceUrl = safeUrl(item.source_url);
+        const mapsUrl = safeUrl(buildMapsUrl(item));
+
+        const tagHtml = tags
+          .map((tag) => `<span class="rounded-md border border-orange-100 bg-amber-50 px-2.5 py-1 text-xs font-bold text-red-700">${escapeHtml(tag)}</span>`)
+          .join("");
+
+        const actionHtml = [
+          sourceUrl
+            ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold uppercase text-white transition hover:bg-red-800">Ver fonte</a>`
+            : "",
+          mapsUrl
+            ? `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer" class="rounded-xl border border-red-600 px-4 py-2 text-sm font-bold uppercase text-red-600 transition hover:bg-red-50">Abrir mapa</a>`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("");
+
+        return `
+          <article class="rounded-xl border-2 border-orange-100 bg-white p-5 text-left shadow-sm transition hover:border-red-100 hover:shadow-md">
+            <div class="mb-3 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <div class="mb-2 flex flex-wrap items-center gap-2">
+                  <span class="rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">${typeLabel}</span>
+                  ${priceLabel ? `<span class="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-bold text-red-700">${priceLabel}</span>` : ""}
+                </div>
+                <h2 class="text-xl font-bold leading-tight text-black md:text-2xl">${title}</h2>
+                ${subtitle ? `<p class="mt-1 text-sm font-bold text-red-600 md:text-base">${subtitle}</p>` : ""}
+              </div>
+            </div>
+
+            ${description ? `<p class="line-clamp-3 text-sm leading-6 text-neutral-700 md:text-base">${description}</p>` : ""}
+
+            <div class="mt-4 flex flex-wrap gap-2 text-sm text-neutral-700">
+              ${neighborhood ? `<span class="rounded-md bg-orange-50 px-2.5 py-1 font-semibold">📍 ${neighborhood}</span>` : ""}
+              ${address ? `<span class="rounded-md bg-orange-50 px-2.5 py-1 font-semibold">${address}</span>` : ""}
+              ${startsAt ? `<span class="rounded-md bg-orange-50 px-2.5 py-1 font-semibold">📅 ${startsAt}</span>` : ""}
+              ${sourceLabel ? `<span class="rounded-md bg-orange-50 px-2.5 py-1 font-semibold">${sourceLabel}</span>` : ""}
+            </div>
+
+            ${tagHtml ? `<div class="mt-4 flex flex-wrap gap-2">${tagHtml}</div>` : ""}
+            ${actionHtml ? `<div class="mt-5 flex flex-wrap gap-2">${actionHtml}</div>` : ""}
+          </article>
+        `;
+      }
+
+      function renderEmptyState(query) {
+        return `
+          <div class="text-center">
+            <p class="text-lg font-bold text-red-600">Nenhum rolê encontrado para “${escapeHtml(query)}”.</p>
+            <p class="mt-2 text-sm text-neutral-700 md:text-base">
+              Tente termos mais simples, como “bar”, “pagode”, “restaurante”, “gratuito” ou “hoje”.
+            </p>
+          </div>
+        `;
+      }
+
+      function renderErrorState() {
+        return `
+          <div class="text-center">
+            <p class="text-lg font-bold text-red-600">Não consegui conectar com a busca agora.</p>
+            <p class="mt-2 text-sm text-neutral-700 md:text-base">
+              Confira se o Worker está rodando e se a variável PUBLIC_API_URL aponta para a API correta.
+            </p>
+          </div>
+        `;
+      }
+
+      function startTypingButton() {
+        const text = "Vou achar procê . . .";
+        let index = 0;
+
+        clearInterval(typingInterval);
+        buttonLabel.textContent = "";
+
+        typingInterval = window.setInterval(() => {
+          buttonLabel.textContent = text.slice(0, index + 1);
+          index = (index + 1) % text.length;
+        }, 100);
+      }
+
+      function stopTypingButton(nextText = DEFAULT_BUTTON_TEXT) {
+        clearInterval(typingInterval);
+        buttonLabel.textContent = nextText;
+      }
+
+      function setBusy(isBusy) {
+        messageBtn.disabled = isBusy;
+        liveSection?.setAttribute("aria-busy", String(isBusy));
+
+        if (isBusy) {
+          startTypingButton();
+          responseEl.innerHTML = `
+            <div class="text-center">
+              <p class="text-lg font-bold text-red-600">Buscando experiências...</p>
+              <p class="mt-2 text-sm text-neutral-700 md:text-base">Só um instante.</p>
+            </div>
+          `;
+        }
+      }
+
+      async function performSearch(query) {
+        const cleanQuery = query.trim();
+        if (!cleanQuery) return;
+
+        setBusy(true);
+
+        try {
+          const response = await fetch(`${API_URL}?q=${encodeURIComponent(cleanQuery)}`);
+
+          if (!response.ok) {
+            throw new Error(`Erro HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          const items = Array.isArray(data.items) ? data.items : [];
+
+          if (items.length === 0) {
+            responseEl.innerHTML = renderEmptyState(cleanQuery);
+          } else {
+            responseEl.innerHTML = `
+              <div class="mb-4 text-left">
+                <p class="text-sm font-bold uppercase tracking-wide text-red-600">
+                  ${items.length} ${items.length === 1 ? "resultado encontrado" : "resultados encontrados"}
+                </p>
+                <h1 class="mt-1 text-xl font-bold text-black">Vê se é isso que você quer!</h1>
+              </div>
+              <div class="space-y-4">
+                ${items.map(renderItem).join("")}
+              </div>
+            `;
+          }
+
+          stopTypingButton("Vê se é isso que você quer!");
+        } catch (error) {
+          console.error("Erro na busca:", error);
+          responseEl.innerHTML = renderErrorState();
+          stopTypingButton("Tentar de novo");
+        } finally {
+          messageBtn.disabled = false;
+          liveSection?.setAttribute("aria-busy", "false");
+
+          window.setTimeout(() => {
+            if (!messageBtn.disabled) stopTypingButton(DEFAULT_BUTTON_TEXT);
+          }, 2800);
+        }
+      }
+
+      searchForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        await performSearch(messageInput.value);
+      });
+
+      quickSearchButtons.forEach((button) => {
+        button.addEventListener("click", async () => {
+          const query = button.getAttribute("data-query") || "";
+          messageInput.value = query;
+          await performSearch(query);
+        });
+      });
+    </script>
+  </body>
+</html>

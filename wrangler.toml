@@ -1,0 +1,10 @@
+name = "oncovo-api"
+compatibility_date = "2024-03-20"
+
+# O Worker precisará desse arquivo futuramente, vamos deixá-lo mapeado
+main = "worker/index.ts" 
+
+[[d1_databases]]
+binding = "DB"
+database_name = "oncovo-db"
+database_id = "52647cc2-2805-4aab-acf3-ac720f675aa9"
