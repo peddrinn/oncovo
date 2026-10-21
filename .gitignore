@@ -1,11 +1,26 @@
+# Segredos e dados brutos: nunca versionar
+.env
+.env.*
+!.env.example
+.dev.vars
+*.sqlite
+*.sqlite-*
+.wrangler/
+.pytest_cache/
+__pycache__/
+*.py[cod]
 .venv/
 venv/
-__pycache__/
-*.pyc
-.env
-
 node_modules/
 dist/
-build/
+.astro/
 *.log
 .DS_Store
+etl/raw/
+etl/processed/
+etl/output/
+etl/all_posts.jsonl
+etl/extracoes_validas_*.jsonl
+etl/fila_*.jsonl
+# Arquivos gerados e atualizáveis — não subir por engano
+# db/seed.sql pode ser gerado localmente para publicação revisada

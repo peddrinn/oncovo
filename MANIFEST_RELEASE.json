@@ -1,0 +1,196 @@
+{
+  "release_date": "2026-10-20",
+  "type": "overlay_sobre_repositorio_existente",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 988,
+      "sha256": "64fa0fc9200482c8baa713a60e8ccff9bd9b60792f16026e92b3b9e12738c601"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 437,
+      "sha256": "a8bb2b5aa30aefd1156788276525cd7c1f36617af4d02d354b260ac5219d73d0"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4525,
+      "sha256": "653385544c23aabfad04255c95b18a97d5a7c1238b7de01ee34a8ad943a74e0d"
+    },
+    {
+      "path": "db/schema.sql",
+      "bytes": 1508,
+      "sha256": "8a57f71e8efa102051979cf23119e7c51d2edc31e7e9704ba3a3a3f0f191e8f0"
+    },
+    {
+      "path": "db/seed.sql",
+      "bytes": 25474,
+      "sha256": "ea1042d0c05639deaaccc96a3bfb2a7ea7578d6c7f8d06410e3f7cb702ce30e6"
+    },
+    {
+      "path": "docs/LANCAMENTO.md",
+      "bytes": 2984,
+      "sha256": "2d4b1c57af236f868ef30ce90bf49baeeac3a1508d9e5fafa13eb953e1de8b92"
+    },
+    {
+      "path": "docs/PUBLICACAO.md",
+      "bytes": 4700,
+      "sha256": "0a3f2231a3a2665729698e417563703f41edff11b856f34cf4e7920889eeaba3"
+    },
+    {
+      "path": "docs/RELATORIO_TECNICO.md",
+      "bytes": 3630,
+      "sha256": "d3c86127be828e4b1783cd6e27e7db0157dfc888a4ddcff66358d3ecc99a3860"
+    },
+    {
+      "path": "docs/SEGURANCA.md",
+      "bytes": 1571,
+      "sha256": "6d7fcc524e87e9d5a104e524379ffcfc5595a182897ea7a47fdbde6bc1263309"
+    },
+    {
+      "path": "etl/.env.example",
+      "bytes": 104,
+      "sha256": "30a61e2b5942a002ae8e6beee1746df0bbfb7ce4d7f936f755aa22f3c8117e82"
+    },
+    {
+      "path": "etl/README.md",
+      "bytes": 2236,
+      "sha256": "1f4dea5c52948edae5b2b971e34fb1606ec20ee7400b5d364d90865aeb1c674f"
+    },
+    {
+      "path": "etl/common.py",
+      "bytes": 4312,
+      "sha256": "ad5814c4ec0ca06e88df2599ddaa0f6fbc34d7c44043ae24d829ea1a2bf9b64b"
+    },
+    {
+      "path": "etl/extrair_llm.py",
+      "bytes": 6139,
+      "sha256": "b365112de0046fd7e839f8eeaa1c45afb13997c9fde96550789e4a94e0a0a917"
+    },
+    {
+      "path": "etl/gerar_seed.py",
+      "bytes": 3554,
+      "sha256": "ea6d70c1d409fd3af28a2fb33533feba8cd689bf7d2e351affda82a021bc6d28"
+    },
+    {
+      "path": "etl/items_publicaveis.jsonl",
+      "bytes": 45202,
+      "sha256": "b4a83d7da22a5e15accd9c0c45ecbb384da641b87ec4b8f39da315cef718bbdd"
+    },
+    {
+      "path": "etl/output/revisao.csv",
+      "bytes": 4423,
+      "sha256": "11acd494a3f1d358a55d9def202c1c4d3a5d23999fd80127afd322ebef07c684"
+    },
+    {
+      "path": "etl/output/search_items.jsonl",
+      "bytes": 15476,
+      "sha256": "ed597c1c6d5908b0decb83ed7efaa8a612b2ba54b5998152cedb50078181812a"
+    },
+    {
+      "path": "etl/preparar_publicacao.py",
+      "bytes": 8126,
+      "sha256": "31cf68bb73c0a6becc38e2fe792130c8c449f808c1ee8d0cb28eed475777f58a"
+    },
+    {
+      "path": "etl/triagem.py",
+      "bytes": 2078,
+      "sha256": "3fc4f8865e617fdfc58a755c7647d05999d4efd3c3c101ec8bc71ff516b357e9"
+    },
+    {
+      "path": "package.json",
+      "bytes": 361,
+      "sha256": "c150b022c7ce1698736e69d03ed86dc5784af991790b587782b7b0acf4a09635"
+    },
+    {
+      "path": "tests/test_etl.py",
+      "bytes": 3935,
+      "sha256": "0128ac679e5f3ce5bb74a30c5e1284d361dad9d8572266484f60833781ac719a"
+    },
+    {
+      "path": "tests/test_worker.mjs",
+      "bytes": 1898,
+      "sha256": "bfc04eac2d284ebe60ff65b792f97da7cc8f16fecab6977726380af2eaeda915"
+    },
+    {
+      "path": "web/.env.example",
+      "bytes": 120,
+      "sha256": "a5177216d15966e8b960e3589be00f402508799057300c517e2faaf5739cb521"
+    },
+    {
+      "path": "web/astro.config.mjs",
+      "bytes": 170,
+      "sha256": "d77fe2348e9021496efb58b749fae827f41ee62350b55b821202f6c1fea962bf"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 314,
+      "sha256": "535b30c92ee671f47f6828e212ca67136a9b17948ac0f635fd787f73b3dd7413"
+    },
+    {
+      "path": "web/public/_headers",
+      "bytes": 175,
+      "sha256": "f379003c601ce430239c55bf43d2c007b6dfab7ee953ee0a674cba9192058d2b"
+    },
+    {
+      "path": "web/public/robots.txt",
+      "bytes": 23,
+      "sha256": "16ceb5ee3e0dc13aa9adf31a3ebbe45a1d965b8c2b9f72eaf84e5911e140ed95"
+    },
+    {
+      "path": "web/src/layouts/Base.astro",
+      "bytes": 1678,
+      "sha256": "a3a66c13d2ccf8b9ab80260ea9f2f806b0893ac70b6fedd15da0ecdfbfaaa015"
+    },
+    {
+      "path": "web/src/pages/index.astro",
+      "bytes": 9572,
+      "sha256": "eedde038f42a3e23d9f9d1437e5ee9150fdf4787108ca96e399794068c5d9360"
+    },
+    {
+      "path": "web/src/pages/privacidade.astro",
+      "bytes": 1204,
+      "sha256": "0071c355c0037b4db4c9774fd08dc93a1ea1b857f1bd7813820166b15b1bbc61"
+    },
+    {
+      "path": "web/src/pages/sobre.astro",
+      "bytes": 978,
+      "sha256": "36dab415b7d16d1939415ede332b7ff2313754fe928b0ce9224dc86bfa5a2c26"
+    },
+    {
+      "path": "web/src/pages/termos.astro",
+      "bytes": 1085,
+      "sha256": "1ec427aaec36e9281ba852d9e0933b6f6405e3ac165d6888427849598995368e"
+    },
+    {
+      "path": "web/src/styles/global.css",
+      "bytes": 897,
+      "sha256": "0b0ef89be5db8dfe2820338788a90871a8d00604e9f081a1f9b16c01977ba187"
+    },
+    {
+      "path": "web/tsconfig.json",
+      "bytes": 95,
+      "sha256": "bfd1fee8197509762a30e562fad94dd87e8f040a8a17a169ff141ddb8b664a9a"
+    },
+    {
+      "path": "worker/index.ts",
+      "bytes": 10045,
+      "sha256": "1b8539bdb618e64b94a381732887443b1528538663b4c3673c7cba7ba5f313fc"
+    },
+    {
+      "path": "worker/tsconfig.json",
+      "bytes": 269,
+      "sha256": "37248f9cec80523439d1cfb551d1b2b7b50d6aa3e144566a756dcaa6312d2f43"
+    },
+    {
+      "path": "worker/types.d.ts",
+      "bytes": 351,
+      "sha256": "711e76581322deff19df7290b77042409434346b1be238b32a3e517269a344bf"
+    },
+    {
+      "path": "wrangler.toml",
+      "bytes": 484,
+      "sha256": "270e7df7f85d16eb51c7dec8a8efdd3d769e3299b4794a86c1051261fae58e99"
+    }
+  ]
+}

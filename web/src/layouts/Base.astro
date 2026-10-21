@@ -1,0 +1,33 @@
+---
+import '../styles/global.css';
+interface Props {title:string; description:string}
+const {title, description}=Astro.props;
+---
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen flex flex-col antialiased">
+    <header class="mx-auto max-w-4xl px-4 pt-8 pb-2 w-full text-center">
+      <a href="/" class="inline-flex items-center justify-center" aria-label="Oncovô? — início">
+        <img src="/logo.png" alt="Oncovô?" width="330" height="125"
+          class="h-auto w-64 sm:w-80 max-w-[80vw]" loading="eager" />
+      </a>
+    </header>
+    <main class="mx-auto max-w-4xl w-full flex-1 px-4 pt-6 pb-12"><slot /></main>
+    <footer class="border-t border-orange-200 py-7 text-sm text-neutral-600">
+      <nav class="mx-auto max-w-4xl px-4 flex flex-wrap gap-x-6 gap-y-3 justify-center" aria-label="Informações institucionais">
+        <a class="hover:text-red-700 underline-offset-2 hover:underline" href="/sobre/">Sobre</a>
+        <a class="hover:text-red-700 underline-offset-2 hover:underline" href="/privacidade/">Privacidade</a>
+        <a class="hover:text-red-700 underline-offset-2 hover:underline" href="/termos/">Termos</a>
+      </nav>
+      <p class="text-center mt-4 px-4">© 2026 Oncovô? — Informações sujeitas a alterações. Confirme com a fonte original.</p>
+    </footer>
+  </body>
+</html>

@@ -1,4 +1,13 @@
 {
+  "name": "oncovo-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init:local": "wrangler d1 execute oncovo-db --local --file db/schema.sql",
+    "db:seed:local": "wrangler d1 execute oncovo-db --local --file db/seed.sql"
+  },
   "dependencies": {
     "wrangler": "^4.103.0"
   }

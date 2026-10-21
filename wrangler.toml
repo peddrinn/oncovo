@@ -1,10 +1,14 @@
 name = "oncovo-api"
-compatibility_date = "2024-03-20"
+main = "worker/index.ts"
+compatibility_date = "2026-10-01"
 
-# O Worker precisará desse arquivo futuramente, vamos deixá-lo mapeado
-main = "worker/index.ts" 
-
+# Banco D1 existente do projeto. Confira a conta antes de aplicar migrations.
 [[d1_databases]]
 binding = "DB"
 database_name = "oncovo-db"
 database_id = "52647cc2-2805-4aab-acf3-ac720f675aa9"
+
+[vars]
+# Inserir a origem exata do Pages na Cloudflare (sem barra final) antes do deploy.
+# Exemplo: https://oncovo.pages.dev,http://localhost:4321
+ALLOWED_ORIGINS = "http://localhost:4321,http://127.0.0.1:4321"

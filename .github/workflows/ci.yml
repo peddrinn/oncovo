@@ -1,0 +1,33 @@
+name: CI Oncovo
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+      - name: Testes ETL Python
+        run: python -m unittest discover -s tests -v
+      - name: Instalar API
+        run: npm ci
+      - name: Verificar Worker TypeScript
+        run: |
+          npm install --no-save --package-lock=false typescript@5.9.3
+          npx tsc --noEmit --project worker/tsconfig.json
+          npx tsc --project worker/tsconfig.json --noEmit false --outDir tests/.compiled
+          node tests/test_worker.mjs
+      - name: Instalar frontend
+        run: npm ci --prefix web
+      - name: Build Astro
+        run: npm run build --prefix web
