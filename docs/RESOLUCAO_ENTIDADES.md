@@ -100,3 +100,7 @@ Retorno 2 = linha inválida; 3 = chave ausente ou duplicata em etapa posterior a
 ## Continuação A5 — reconciliação do catálogo com D1 local
 
 Após homologar as entidades, seguir `docs/A5_RECONCILIACAO_D1_LOCAL.md`. A A2 não promove `entity_registry.proposed.json` nem executa despublicação automaticamente. Reconciliar somente IDs já identificados e aprovados.
+
+## Entrada incremental A1 — 22/10/2026
+
+A1 deduplica **posts**, não estabelecimentos. Novas revisões no delta passam por triagem, extração validada e revisão antes de gerar cards. Reusar a registry revisada entre lotes mantém a PK quando surge fonte nova; uma registry proposta sintética não deve substituir a real. O ensaio A1→A2→A5 confirmou ordem inversa/lotes parciais, uma nova fonte na entidade existente, filiais preservadas e ocultação somente após aprovação de fixture. Relatório: [A1_A5_HOMOLOGACAO_2026-10-22.md](A1_A5_HOMOLOGACAO_2026-10-22.md).

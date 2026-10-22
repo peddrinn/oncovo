@@ -183,3 +183,26 @@ Use `D-022 — Título (proposta/aceita/substituída)`, `Data`, `Contexto`, `Alt
 **Consequências:** nenhuma mudança de schema, Worker ou contrato. Homologação D1 sintética isolada aprovada; principal com 13 publicados preservados, aplicação editorial real pendente. Registry e overrides continuam sem promoção automática.
 **Critério de teste:** 75 unittest aprovados, incluindo 23 A5, regressões para destino alterado e fonte oculta divergente; SQL PASS/verify, idempotência, rollback e restauração integral testados no Wrangler local. Evidências em `docs/A5_HOMOLOGACAO_2026-10-22.md`.
 **Depende de:** D-030, D-031, D-032. Não substitui gates editoriais.
+
+### D-034 — A1 usa ledger de lotes JSONL e dedupe global de posts (aceita tecnicamente — 22/10/2026)
+**Contexto:** o coletor legado deduplicava por post/perfil e usava splitlines, perdendo a distinção entre descoberta, autor e unidade física. Faltavam versões e manifestos.
+**Alternativas:** novo banco operacional, append sem histórico ou lotes imutáveis com snapshots e delta.
+**Decisão:** `lotes_incrementais.py` importa arquivos offline com identidade `instagram:code`, hash de conteúdo relevante e proveniência cumulativa separada. Inputs/chunks preservam observações e versões; catalog consolida uma linha lógica e delta disponibiliza somente posts novos/alterados. Não resolve estabelecimentos nem chama LLM/D1. As triagens existentes mantêm todos os perfis.
+**Consequências:** captura repetida em outro perfil não gera segunda extração candidata. Alterações exigem revisão de versão; cache legado por post_code da A3 não deve ser tomado como cache por hash. Sem novo banco ou alteração de Worker/schema/prompt.
+**Critério de teste:** repetição global, múltiplos perfis, mudança de legenda, Unicode U+2028, checksums e contrato de triagem/prompt testados offline; simulações de 100 a 5.000 posts únicos.
+**Depende de:** D-009, D-021, D-026; entidades continuam regidas pela A2.
+
+### D-035 — Promoção de lote por rename atômico, com checkpoints duráveis (aceita tecnicamente — 22/10/2026)
+**Contexto:** um arquivo parcialmente escrito ou uma retomada não pode aparecer como base completa.
+**Alternativas:** estado em memória, banco operacional adicional ou staging por lote com chunks e manifesto.
+**Decisão:** `pending/` nunca alimenta triagem; chunks contíguos são checkpoints autoritativos, protegidos por lock flock e gravações temporárias/fsync/replace. Lote validado vira `batches/` por rename no mesmo filesystem. Falhas/JSON inválido/última linha incompleta preservam a entrada e bloqueiam promoção. Retomada recusa entrada/configuração alterada ou parent avançado. Replay completo confere hashes e não escreve.
+**Consequências:** suporte em Linux/WSL/Docker Linux; armazenamento cresce com histórico e snapshots completos, sem política automática de expurgo. Checkpoints de arquivo por perfil não representam cursores remotos. Adaptador opcional preserva raw e sidecar, retoma perfis incompletos, sem login/rede nos testes. Coleta real exige autorização própria e referência explícita.
+**Critério de teste:** pausas, exceção entre chunks, temporário interrompido, aquisição falha com cliente falso, perfil completo não consultado novamente, checkpoint persistido e corrupção de arquivo bloqueada.
+**Depende de:** D-034, D-026. Não autoriza aquisição externa.
+
+### D-036 — Homologação A1→A2→A5 sintética não substitui decisão editorial (aceita — 22/10/2026)
+**Contexto:** A5 já estava tecnicamente homologada; faltam aprovações reais de identidade/ocultação. A1 foi autorizada nesta tarefa sem coleta externa.
+**Decisão:** reutilizar a evidência A5 existente e complementar com ensaio incremental reproduzível em persistência D1 nova, exclusivamente local. Confirmar registry estável entre lotes/ordens, guards contra estado atrasado, gate sem aprovação, UPDATE idempotente, preservação de ausentes e rollback/restauração. Principal permanece sem seed/reconciliação real; registry/overrides reais não promovidos.
+**Consequências:** A1 pode ser concluída tecnicamente offline enquanto A5 editorial permanece pendente; a restrição anterior de aguardar aplicação real antes de iniciar A1 foi superada pela autorização explícita desta tarefa. Aquisição real e A3 paga seguem sob autorização separada. Candidatos numerosos na escala são sinal de carga de revisão, não prova de duplicações reais.
+**Critério de teste:** evidências em `docs/A1_A5_HOMOLOGACAO_2026-10-22.md`; SQL PASS e verify no Wrangler local, idempotência, estado atrasado bloqueado e duas reversões; banco principal comparado ao snapshot A5.
+**Depende de:** D-023, D-030 a D-035. Não aprova fusões nem lançamento.

@@ -64,3 +64,9 @@ Documentação de contrato: `docs/CONTRATOS_DADOS.md`. O prompt Maritaca e a col
 ## Reconciliação A5 — D1 local (22/10/2026)
 
 A documentação atualizada para a reconciliação auditável está em `docs/A5_RECONCILIACAO_D1_LOCAL.md`. Gerar seed canônico somente com aprovação editorial; obter snapshot REAL do D1 local DEPOIS do seed; gerar CSV de revisão, aprovar despublicação de IDs substituídos, gerar `UPDATE` condicional e verificar. O SQL não é executado pelo Python. Não usar `--remote` e não tratar ausência em lote parcial como motivo para ocultar um lugar.
+
+## A1 incremental — homologação de 22/10/2026
+
+Antes da triagem, importar raw autorizado com `etl/lotes_incrementais.py`, conforme [A1_COLETA_INCREMENTAL.md](A1_COLETA_INCREMENTAL.md). O ledger preserva inputs/versões/proveniência e disponibiliza delta novo/alterado somente quando o lote está completo. Triar `batches/<batch_id>/delta.jsonl`; nunca consumir pending. Perfis de descoberta não são autor/coautores. Replay do mesmo lote não é ordem para repetir estágios pagos.
+
+A1 foi validada offline e integrada à A2/A5 sintética no D1 isolado; nenhuma aquisição real nem extração paga ocorreu. Aprovações reais de registry e reconciliação A5 seguem pendentes. Posts alterados precisam de extração/revisão por versão: o cache legado A3 por post_code não resolve essa decisão. Resultados e limitações: [A1_A5_HOMOLOGACAO_2026-10-22.md](A1_A5_HOMOLOGACAO_2026-10-22.md).

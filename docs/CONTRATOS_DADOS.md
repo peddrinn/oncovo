@@ -80,3 +80,9 @@ Nas **cópias históricas anexadas a esta auditoria** (não assumir que são tod
 | `items_publicaveis.jsonl` | 100 | 100 | 0 | 0 |
 
 O `U+2028` presente em legendas é conteúdo válido de string JSON. O fluxo correto lê registros por *newline byte* (`\n`), não pelos separadores Unicode aceitos por `str.splitlines()`. A nova auditoria valida a estrutura sem expor legendas e **não tenta corrigir ou descartar registros**. Os 4 códigos duplicados no raw exigem a deduplicação já implementada na triagem; o arquivo raw não precisa ser modificado.
+
+## Contrato A1 incremental — 22/10/2026
+
+`etl/lotes_incrementais.py` recebe raw (`code`, `caption_text`, `taken_at` ISO com fuso quando informado, `user`, localização e coautores), sem inferir aprovação editorial. Acrescenta `platform`, `_content_hash` e `_source_profiles` cumulativo; `_profile_username` mantém um representante compatível. `user.username` continua autor. Cada batch completo tem input imutável, chunks, observações, catálogo lógico, delta e manifesto com hashes/métricas/checkpoints. `pending` e `failed` não alimentam consumidores.
+
+Identidade global `instagram:code`; não confundir com `entity_id`/`card_id` da A2. Perfil novo com mesmo conteúdo não gera nova linha delta; alteração relevante preserva versões e demanda revisão. As duas triagens mantêm perfis múltiplos. A saída avançada permanece compatível com `messages_for`/prompt atual; A3 não foi executada, e cache por revisão/hash requer trabalho autorizado na sua própria fase. Detalhes de campos, métricas e retomada: [A1_COLETA_INCREMENTAL.md](A1_COLETA_INCREMENTAL.md).

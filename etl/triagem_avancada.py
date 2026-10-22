@@ -491,9 +491,9 @@ def main() -> None:
     source_profiles_by_code: Dict[str, List[str]] = defaultdict(list)
     for p in raw_posts:
         code = str(p.get("code") or "")
-        src = str(p.get("_profile_username") or "")
-        if code and src and src not in source_profiles_by_code[code]:
-            source_profiles_by_code[code].append(src)
+        sources = p.get("_source_profiles", []) + [p.get("_profile_username")]
+        if code:
+            source_profiles_by_code[code] = sorted(set(source_profiles_by_code[code] + [src for src in sources if src]))
 
     rows = [flatten_post(p, code_count, caption_hash_count, source_profiles_by_code) for p in raw_posts]
     kept_rows = choose_best_per_code(rows)

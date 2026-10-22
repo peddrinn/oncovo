@@ -57,3 +57,7 @@ Reconciliação local com plano SQL revisável e reversão condicionada foi impl
 ## Resultado de homologação local A5 — 22/10/2026
 
 Atualiza os registros anteriores de execução pendente: Python 75/75 (A5 23/23), TypeScript, runtime Worker e build Astro aprovados. Ensaio real Wrangler/D1 **sintético isolado** comprovou aplicação, idempotência e reversão. Principal preservada com 13 lugares publicados; catálogo/registry e despublicação real aguardam aprovação humana. Não constitui autorização de lançamento nem certificação de estabelecimentos ativos. Relatório: [A5_HOMOLOGACAO_2026-10-22.md](A5_HOMOLOGACAO_2026-10-22.md).
+
+## A1 offline e integração A2/A5 — 22/10/2026
+
+Infraestrutura de lotes incrementais, proveniência, versões e retomada implementada; integração sintética com Wrangler/D1 isolado aprovada. Isso não autoriza lançamento, aquisição externa ou gasto com LLM. Principal segue com 13 publicados, registry real não promovida e reconciliação editorial pendente. O piloto proposto aguarda autorização de fonte/método e, em fase própria, orçamento A3. Ver [A1_COLETA_INCREMENTAL.md](A1_COLETA_INCREMENTAL.md) e [relatório A1/A5](A1_A5_HOMOLOGACAO_2026-10-22.md).

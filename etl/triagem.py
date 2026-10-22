@@ -22,9 +22,8 @@ def triage(source: Path, dest: Path, limit: int = 100):
                 'caption_text': str(row.get('caption_text') or ''),
             }
         item = by_code[code]
-        profile = row.get('_profile_username')
-        if profile and profile not in item['source_profiles']:
-            item['source_profiles'].append(profile)
+        profiles = row.get('_source_profiles', []) + [row.get('_profile_username')]
+        item['source_profiles'] = sorted(set(item['source_profiles'] + [p for p in profiles if p]))
         if len(str(row.get('caption_text') or '')) > len(item['caption_text']):
             item['caption_text'] = row['caption_text']
     rows = list(by_code.values())
