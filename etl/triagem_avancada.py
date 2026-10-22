@@ -542,6 +542,7 @@ def main() -> None:
 
     summary = {
         "input_file": str(input_path),
+        "input_sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
         "raw_posts": len(raw_posts),
         "unique_codes": len(set(r.get("post_code") for r in rows if r.get("post_code"))),
         "removed_by_code_dedupe": sum(1 for r in rows if r.get("kept_after_code_dedupe") is False),

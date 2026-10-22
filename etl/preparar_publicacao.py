@@ -18,6 +18,22 @@ def transform(item:dict, ext:dict|None, now=None)->tuple[dict|None,str,str]:
     code=str(item.get('post_code') or '').strip()
     if not safe_source_url(code):return None,'review','post_code inválido'
     if ext is None:return None,'review','extração ausente'
+    if ext.get('extraction_id') or item.get('extraction_id'):
+        from extracao_versionada import result_digest
+        from datetime import date
+        if (not ext.get('extraction_id') or ext['extraction_id']!=result_digest(ext)
+            or item.get('extraction_id')!=ext['extraction_id']
+            or item.get('evidence_digest')!=ext['extraction_id']):
+            return None,'review','evidência/versão mudou; nova revisão obrigatória'
+        if item.get('publish_status')=='published':
+            try:
+                reviewed=item.get('reviewed_at','')
+                if len(reviewed)!=10 or date.fromisoformat(reviewed).isoformat()!=reviewed:raise ValueError()
+            except (ValueError,TypeError):return None,'review','data de aprovação ausente/inválida'
+            if (not str(item.get('reviewed_by') or '').strip()
+                or len(str(item.get('approval_reason') or '').strip())<12
+                or item.get('currentness_recheck_required') is not False):
+                return None,'review','aprovação exige revisor, justificativa e rechecagem de atualidade'
     kind=str(ext.get('content_type') or item.get('content_type') or '')
     if kind not in ('place','event','promotion'):return None,'review','tipo inválido'
     main=get_dict(ext.get('main_entity'))
@@ -111,7 +127,10 @@ def build(approved:Path,extractions:Path,output:Path,report:Path,now=None,raw:Pa
     extracted={}
     for x in read_jsonl(extractions):
         code=str(x.get('post_code') or '')
-        if code:extracted[code]=x
+        if code:
+            if code in extracted and extracted[code]!=x:
+                raise ValueError('Múltiplas versões para '+code+'; use export do plano vigente, não histórico inteiro')
+            extracted[code]=x
     owners={}
     if raw is not None:
         for post in read_jsonl(raw):

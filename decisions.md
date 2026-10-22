@@ -206,3 +206,32 @@ Use `D-022 — Título (proposta/aceita/substituída)`, `Data`, `Contexto`, `Alt
 **Consequências:** A1 pode ser concluída tecnicamente offline enquanto A5 editorial permanece pendente; a restrição anterior de aguardar aplicação real antes de iniciar A1 foi superada pela autorização explícita desta tarefa. Aquisição real e A3 paga seguem sob autorização separada. Candidatos numerosos na escala são sinal de carga de revisão, não prova de duplicações reais.
 **Critério de teste:** evidências em `docs/A1_A5_HOMOLOGACAO_2026-10-22.md`; SQL PASS e verify no Wrangler local, idempotência, estado atrasado bloqueado e duas reversões; banco principal comparado ao snapshot A5.
 **Depende de:** D-023, D-030 a D-035. Não aprova fusões nem lançamento.
+
+### D-037 — Identidade A3 por entrada efetiva, prompt, modelo e contrato (aceita tecnicamente — 22/10/2026)
+**Contexto:** o cache legado por post_code reutilizava conteúdo alterado e desconhecia prompt/modelo. O ensaio também revelou que score/classe da triagem e perfil de descoberta no payload invalidavam cache de posts intactos quando o lote mudava.
+**Alternativas:** cache por post, cache por raw inteiro ou identidade da solicitação efetivamente enviada.
+**Decisão:** request_id por plataforma/post_code, mensagem renderizada, prompt SHA-256, modelo/parâmetros/contrato/provedor; extraction_id distinto congela a resposta validada e sua proveniência. Remover ranking/heurísticas/perfil de descoberta do payload LLM, preservando-os na auditoria. Não mudar prompt. Fixtures usam namespace de provedor separado; histórico sem identidade verificável fica legacy_unverified, não cache equivalente.
+**Consequências:** post factual igual reaproveita; alterações relevantes exigem nova extração/revisão; versões anteriores preservadas. Modelo efetivo/id/usage do provedor são registrados quando disponíveis. Não implica qualidade real medida.
+**Teste:** cache/alteração/prompt/modelo/parâmetros/metadados, importação legada e três lotes sintéticos integrados.
+**Depende de:** D-015, D-026, D-034.
+
+### D-038 — Reserva durável e prévia aprovada antes de qualquer inferência paga (aceita tecnicamente — 22/10/2026)
+**Contexto:** faltavam usage e orçamento; retries/timeouts podiam repetir gasto sem trilha.
+**Decisão:** plano offline com mensagens reais, contagens e estimativa explicitamente aproximada. Execução exige opt-in, plan_id aprovado, referência de autorização, preços/moeda/referência, bound de tokens declarado verificado, orçamento e limites. Reservar antes da chamada; retries limitados e também reservados. Contabilizar por autorização entre planos. Usage desconhecido não é gratuito; resposta durável é recuperada sem inferência repetida. Falhas anteriores exigem referência explícita de retry. Chamada direta legada sem plano desativada.
+**Consequências:** sem cotação/bound confiável, execução fica bloqueada. O bound é declaração verificável do operador, não derivação confiável de caracteres/3. Não há garantia absoluta do faturamento externo. Nenhuma chamada paga ocorreu nesta homologação.
+**Teste:** orçamento insuficiente, ausência de autorização/prévia, timeout/429, resposta inválida, recuperação após falha de disco, usage e excesso do bound, com transportes falsos.
+**Depende de:** D-006, D-037.
+
+### D-039 — Aprovação A4 ligada à versão exata da evidência (aceita tecnicamente — 22/10/2026)
+**Contexto:** decisão por post_code podia permanecer aplicada depois de nova extração.
+**Decisão:** filas JSONL/CSV começam em review, com IDs/digest/batch, evidências/riscos e campos humanos. Importação CSV preserva identidade/campos congelados. Publicador exige digest íntegro e igualdade da versão aprovada, revisor/data/motivo/rechecagem; recusa histórico ambíguo de múltiplas revisões por post. Alteração gera revisão nova, sem apagar aprovação antiga. Preservar leitores legados sem inventar versionamento.
+**Consequências:** nenhuma confiança/extração/fusão aprova publicação; estados e gates temporais/comerciais existentes mantidos. Não houve aprovação real, promoção de registry ou mudança de Worker/schema.
+**Teste:** defaults review, CSV preservado/forjado, aprovação sintética exata, alteração de evidência e histórico ambíguo bloqueados; integração A2/A5.
+**Depende de:** D-018, D-025, D-037.
+
+### D-040 — Qualidade medida separadamente de estrutura e confiança (aceita — 22/10/2026)
+**Contexto:** schema válido e confiança alta não provam precisão; não há raw/extrações históricas completas ou gabarito de campos disponível.
+**Decisão:** validar estrutura/evidências/contradições deterministicamente; preparar referência estratificada com labels vazios; avaliar por campo/tipo/fonte somente versões com revisor/data/evidência. Exibir métricas null/vazias sem gabarito, separar julgamentos humanos e calibração de confiança. Respostas sintéticas e preços TEST não são resultados Maritaca.
+**Consequências:** A3/A4 prontas tecnicamente offline, qualidade real e operação live pendentes. Piloto proposto 160 em 2×80 depende de autorização nominal de aquisição; inferência paga tem autorização posterior separada, cotação/bound/teto aprovados.
+**Teste:** ausência de gabarito sem acurácia inventada, versão exata de referência, métricas com referência exclusivamente sintética; 140 unittest e ensaio D1 local isolado documentados no relatório A3/A4.
+**Depende de:** D-029, D-038, D-039.

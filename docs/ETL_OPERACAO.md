@@ -70,3 +70,11 @@ A documentação atualizada para a reconciliação auditável está em `docs/A5_
 Antes da triagem, importar raw autorizado com `etl/lotes_incrementais.py`, conforme [A1_COLETA_INCREMENTAL.md](A1_COLETA_INCREMENTAL.md). O ledger preserva inputs/versões/proveniência e disponibiliza delta novo/alterado somente quando o lote está completo. Triar `batches/<batch_id>/delta.jsonl`; nunca consumir pending. Perfis de descoberta não são autor/coautores. Replay do mesmo lote não é ordem para repetir estágios pagos.
 
 A1 foi validada offline e integrada à A2/A5 sintética no D1 isolado; nenhuma aquisição real nem extração paga ocorreu. Aprovações reais de registry e reconciliação A5 seguem pendentes. Posts alterados precisam de extração/revisão por versão: o cache legado A3 por post_code não resolve essa decisão. Resultados e limitações: [A1_A5_HOMOLOGACAO_2026-10-22.md](A1_A5_HOMOLOGACAO_2026-10-22.md).
+
+## A3/A4 versionadas — 22/10/2026
+
+O bloqueio anterior de cache por post_code foi tratado em `etl/extracao_versionada.py`; `extrair_llm.py` encaminha ao planejador. Fluxo: A1 completa → triagem com SHA-256 → plano offline → autorização paga separada → resultado durável/versionado → fila A4 review → decisão humana da versão exata → preparação → A2 → A5. Nenhuma inferência paga ocorreu nesta entrega.
+
+Score/classe de triagem e perfil de descoberta ficam na auditoria, fora da mensagem ao modelo; legenda/dados factuais, prompt, modelo e parâmetros definem a identidade. Exports históricos não equivalem automaticamente ao cache novo. Filas/exports anteriores não são sobrescritos e publicação não escolhe arbitrariamente uma revisão dentre múltiplas.
+
+Operação: [A3_EXTRACAO_VERSIONADA.md](A3_EXTRACAO_VERSIONADA.md). Qualidade: [A3_AVALIACAO_QUALIDADE.md](A3_AVALIACAO_QUALIDADE.md). Revisão CSV/JSONL: [A4_REVISAO_EDITORIAL.md](A4_REVISAO_EDITORIAL.md). Piloto e autorizações separadas: [PILOTO_DADOS_RECENTES.md](PILOTO_DADOS_RECENTES.md).

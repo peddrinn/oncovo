@@ -112,3 +112,9 @@ Antes de qualquer gasto: deduplicar por post/hash contra o store; aplicar triage
 Medir por fonte: proporção útil após revisão, endereço/datas comprovados, novos lugares únicos, fontes vinculadas a entidades existentes, candidatos por 100 posts, conflitos, duplicatas, alterações e custo por entidade nova aprovada. Revisão humana cobre unidade física, autor/fonte, datas, atualidade, preço e toda fusão/ocultação. Guardar falsos positivos e falsos negativos observados.
 
 Aumentar volume só após os dois lotes sem corrupção/perda, IDs estáveis, custo dentro do teto aprovado e fila de revisão compatível com a capacidade editorial. A simulação indicou que candidatos podem crescer rapidamente com nomes semelhantes; não automatizar sua aprovação nem assumir rendimento real a partir de fixtures.
+
+## Continuação A3/A4 — 22/10/2026
+
+A pendência A3 de cache legado por post_code foi tratada: request_id agora depende da entrada efetivamente enviada/prompt/modelo/parâmetros/contrato. Ranking e perfil de descoberta continuam na auditoria, mas foram excluídos da mensagem para não invalidar cache sem mudança factual. Fonte nova sem alteração do conteúdo enviado não exige outra inferência. Alteração real produz nova versão e invalida a aprovação A4 antiga para essa evidência. Extrações históricas sem hashes/modelo verificáveis ficam legacy_unverified.
+
+Prévia, custos/bounds e opt-in estão em [A3_EXTRACAO_VERSIONADA.md](A3_EXTRACAO_VERSIONADA.md). Isso supera as observações anteriores sobre cache apenas por post_code para o caminho novo, sem presumir migração automática do histórico. A integração foi homologada com respostas sintéticas e D1 isolado; aquisição e Maritaca live continuam sem autorização.

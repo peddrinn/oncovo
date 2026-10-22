@@ -86,3 +86,11 @@ O `U+2028` presente em legendas é conteúdo válido de string JSON. O fluxo cor
 `etl/lotes_incrementais.py` recebe raw (`code`, `caption_text`, `taken_at` ISO com fuso quando informado, `user`, localização e coautores), sem inferir aprovação editorial. Acrescenta `platform`, `_content_hash` e `_source_profiles` cumulativo; `_profile_username` mantém um representante compatível. `user.username` continua autor. Cada batch completo tem input imutável, chunks, observações, catálogo lógico, delta e manifesto com hashes/métricas/checkpoints. `pending` e `failed` não alimentam consumidores.
 
 Identidade global `instagram:code`; não confundir com `entity_id`/`card_id` da A2. Perfil novo com mesmo conteúdo não gera nova linha delta; alteração relevante preserva versões e demanda revisão. As duas triagens mantêm perfis múltiplos. A saída avançada permanece compatível com `messages_for`/prompt atual; A3 não foi executada, e cache por revisão/hash requer trabalho autorizado na sua própria fase. Detalhes de campos, métricas e retomada: [A1_COLETA_INCREMENTAL.md](A1_COLETA_INCREMENTAL.md).
+
+## Contrato A3/A4 versionado — 22/10/2026
+
+A entrada da triagem mantém proveniência/score/classe, mas a mensagem LLM usa somente legenda e metadados factuais (data, autor, localização, mentions/coautores); perfil de descoberta e ranking não são enviados para evitar invalidação irrelevante. O prompt original continua intacto. `request_id` inclui entrada efetiva/prompt/modelo/parâmetros/contrato/provedor. `extraction_id` congela raw_response/validated_payload e metadados, incluindo batch/usage/tentativa; o payload normalizado também permanece no nível superior para leitores existentes.
+
+Cache só aceita resultados completos/íntegros/revalidados; legacy_unverified e partial não são equivalentes a sucesso versionado. O plano distingue estimativa aproximada, bounds declarados verificados, reservas e usage real; moeda/preços precisam de origem explícita. Sem gabarito humano, avaliações por campo não recebem acurácia inventada.
+
+A4 adiciona extraction_id/evidence_digest ao contrato editorial; publicação versionada exige correspondência exata com a extração e campos humanos de revisão/atualidade. Formato legado continua legível, sem transformá-lo em aprovação atual. Não houve alteração de schema D1/Worker/API. Detalhes e campos operacionais nos documentos A3/A4.
