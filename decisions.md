@@ -148,3 +148,38 @@ Use `D-022 — Título (proposta/aceita/substituída)`, `Data`, `Contexto`, `Alt
 **Decisão:** relatórios desta etapa são de homologação, não instruções de publicar. Manter `entity_registry.proposed.json` separado da registry aprovada. Antes de qualquer atualização pública, revalidar lugares/ocorrências e comparar com um snapshot real do D1 de homologação, nunca usar simplesmente o catálogo histórico como snapshot remoto.
 **Critério de teste:** relatórios sinalizam `publish_ready=false`; nenhuma ação remota/externa nesta etapa.
 **Depende de:** D-024, D-025; mantém A1/A3/A4/A5/A6 sob seus respectivos gates.
+
+<!-- Frente A A5 — 22/10/2026 -->
+## Frente A — Decisões A5 (reconciliação local) — 22/10/2026
+
+### D-030 — Reconciliação restrita a IDs comprovadamente substituídos (aceita para homologação)
+**Contexto:** o seed canônico mantém as linhas antigas publicadas por UPSERT. Uma fusão de duas fontes pode deixar dois cards, mesmo quando o staging apresenta apenas uma entidade. A ausência em lote parcial não autoriza despublicação.
+**Alternativas:** apagar toda a tabela, ocultar todos os IDs ausentes da exportação, migrar PK imediatamente, ou ocultar exclusivamente origens mapeadas com confirmação.
+**Decisão:** `etl/reconciliar_d1_local.py` recalcula as propostas de `auditar_reconciliacao.py`, aceita somente ações `approved_hide_duplicate` com revisor/data/justificativa/evidência adicional e produz SQL destinado apenas a IDs anteriores comprovadamente substituídos. Candidatos não aprovados permanecem distintos.
+**Consequência:** duas execuções da mesma coleta/seed não devem recriar cards duplicados após reconciliação; operações sobre dados parciais não escondem estabelecimentos não mapeados. Nenhum merge histórico passa a ser prova de estabelecimento ativo.
+**Teste:** `tests/test_a5_reconciliation.py` cobre aprovação, destinos forjados, omissões e itens não relacionados.
+**Depende de:** D-019, D-023, D-027, D-028.
+
+### D-031 — Escrita no D1 local como UPDATE único, com guardas e pós-verificação (aceita)
+**Contexto:** Cloudflare D1 não permite `BEGIN TRANSACTION`/`COMMIT` em SQL importado como SQLite comum; arquivo com várias instruções não deve ser tratado ingenuamente como unidade de rollback.
+**Alternativas:** `DELETE`/`INSERT`, múltiplos `UPDATE`s sem guardas, novo endpoint mutável no Worker ou um `UPDATE` atômico com precondições globais.
+**Decisão:** produzir **uma única instrução `UPDATE ... RETURNING`** que só oculta IDs quando todas as fontes, tipos, status, título, endereço e timestamps `updated_at` do snapshot de origem e do destino canônico ainda conferem. Operações atrasadas ou parciais não atualizam nenhuma origem; SQL de verificação e conferência de snapshot confirmam resultado. Não alterar schema ou Worker.
+**Consequência:** o arquivo é seguro para homologação D1 local e idempotente. `db/reconciliation/` é ignorado pelo Git. A aplicação só pode ser considerada concluída após retorno PASS e `verify`, não apenas pelo sucesso do comando Wrangler. Não operar remoto nesta decisão.
+**Teste:** SQLite real, alterações concorrentes simuladas, alvo canônico ausente/alterado, duas aplicações e verificação; homologação real no Wrangler/D1 local depende de execução no Docker do desenvolvedor.
+**Depende de:** D-019, D-028.
+
+### D-032 — Duas formas de reversão, sem ocultar a ausência de confirmação editorial (aceita)
+**Contexto:** o seed canônico pode alterar a fonte primária e o título do card mantido; desfazer apenas `status='hidden'` não desfaz todo o seed.
+**Alternativas:** nenhuma reversão, rollback indiscriminado por SQL, ou combinar snapshot anterior com operação de restauração guardada e backup integral do D1 local.
+**Decisão:** exigir backup offline de `.wrangler/state` **antes do seed**; para desfazer apenas despublicações, gerar `a5_rollback.sql` condicionado a snapshot pós-aplicação e revisão. Para desfazer **seed + despublicações**, restaurar backup integral, com serviços pausados. `entity_registry.json` e overrides permanecem sob aprovação editorial independente; não foram promovidos automaticamente.
+**Consequência:** nenhuma despublicação é executada neste pacote; depende de ações editoriais e da execução explícita do operador local. O histórico de merge continua auditável por arquivos de staging e decisões.
+**Teste:** reverter em SQLite sem alterar outros cards, bloquear rollback em registro alterado e comparar estado pré/post.
+**Depende de:** D-024, D-029, D-030.
+
+### D-033 — Pós-verificação A5 confere origem e canônico (aceita — 22/10/2026)
+**Contexto:** a verificação SQL original podia retornar PASS apenas pela contagem dos IDs ocultos; `verify_snapshot` não comparava tipo/timestamp do canônico. Uma alteração posterior no destino podia passar despercebida.
+**Alternativas:** confiar em saída zero/status das origens, ou conferir os campos congelados dos dois lados.
+**Decisão:** SQL confere status/fonte/tipo/título/endereço das origens e destinos, com timestamp esperado do canônico. Verificação Python também confere tipo/timestamp do canônico. Timestamp da origem é alterado intencionalmente pelo UPDATE; não compará-lo ao anterior na pós-verificação.
+**Consequências:** nenhuma mudança de schema, Worker ou contrato. Homologação D1 sintética isolada aprovada; principal com 13 publicados preservados, aplicação editorial real pendente. Registry e overrides continuam sem promoção automática.
+**Critério de teste:** 75 unittest aprovados, incluindo 23 A5, regressões para destino alterado e fonte oculta divergente; SQL PASS/verify, idempotência, rollback e restauração integral testados no Wrangler local. Evidências em `docs/A5_HOMOLOGACAO_2026-10-22.md`.
+**Depende de:** D-030, D-031, D-032. Não substitui gates editoriais.

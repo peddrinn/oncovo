@@ -48,3 +48,12 @@ Registrar para cada consulta se trouxe um resultado **correto, atualizado e úti
 - **A2 (identidade):** implementação conservadora e testes sintéticos/SQLite locais disponíveis em `etl/resolver_entidades.py`, `tests/test_entity_resolution.py`, `tests/test_entity_sqlite.py`. O script só gera staging e não modifica banco de dados.
 - **Bloqueio de produção:** antes do seed canônico revisar candidatos, confirmar estabelecimentos ativos, aprovar registry, auditar remapeamento de IDs e executar reconciliação explícita no D1 local. O UPSERT atual **não** remove cards previamente publicados; A5 permanece pendente.
 - **Sem coleta real, sem chamadas à Maritaca e sem D1 remoto** nesta rodada. A base do repositório é apenas demonstração histórica.
+
+<!-- Frente A A5 gate 22-10-2026 -->
+## Gate de dados A5 — 22/10/2026
+
+Reconciliação local com plano SQL revisável e reversão condicionada foi implementada. **Não foi executada neste ambiente no Wrangler/D1 local real**: requer snapshot da máquina, aprovação editorial e comandos `--local` listados em `docs/A5_RECONCILIACAO_D1_LOCAL.md`. Não usar o catálogo histórico como prova de atualização. Registro anterior de Docker pendente foi superado pela validação manual informada pelo desenvolvedor.
+
+## Resultado de homologação local A5 — 22/10/2026
+
+Atualiza os registros anteriores de execução pendente: Python 75/75 (A5 23/23), TypeScript, runtime Worker e build Astro aprovados. Ensaio real Wrangler/D1 **sintético isolado** comprovou aplicação, idempotência e reversão. Principal preservada com 13 lugares publicados; catálogo/registry e despublicação real aguardam aprovação humana. Não constitui autorização de lançamento nem certificação de estabelecimentos ativos. Relatório: [A5_HOMOLOGACAO_2026-10-22.md](A5_HOMOLOGACAO_2026-10-22.md).

@@ -31,3 +31,6 @@ etl/fila_*.jsonl
 *.session
 etl/.sessions/
 *.bak
+
+# Frente A A5: arquivos locais de reconciliação, backups e planos editáveis
+/db/reconciliation/

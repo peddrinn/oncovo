@@ -95,3 +95,8 @@ python etl/auditar_jsonl.py --input etl/processed/extracoes.jsonl --kind extract
 ```
 
 Retorno 2 = linha inválida; 3 = chave ausente ou duplicata em etapa posterior ao raw. **Ambos bloqueiam** avanço do lote. No raw, duplicatas de `code` são relatadas mas não bloqueiam: a triagem existente faz dedupe por postagem. Não concatenar fragmentos de legenda para recuperar JSON automaticamente; repetir exportação limpa ou correção revisada separadamente.
+
+<!-- Frente A A5 integração 22-10-2026 -->
+## Continuação A5 — reconciliação do catálogo com D1 local
+
+Após homologar as entidades, seguir `docs/A5_RECONCILIACAO_D1_LOCAL.md`. A A2 não promove `entity_registry.proposed.json` nem executa despublicação automaticamente. Reconciliar somente IDs já identificados e aprovados.
