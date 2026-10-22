@@ -65,6 +65,50 @@
 **Contexto:** ZIP legado ~108 MB contém `.venv`, `.git`, dumps de dados e conteúdo não necessário para execução.
 **Decisão:** Entregar apenas código revisado, assets selecionados, dados editoriais já existentes no repo, testes, exemplos e documentação. Histórico completo do scraping fica local em `etl/raw/`, ignorado pelo Git.
 
+<!-- Frente A A0/A2 22-10-2026 -->
+## Frente A — Decisões A0/A2 — 22/10/2026
+
+### D-022 — Dedupe por entidade física, preservando o dedupe de post (aceita para homologação)
+**Contexto:** `preparar_publicacao.py` cria `id` por `instagram:post_code`; UPSERT preserva identidade da postagem, não do estabelecimento. `B-008` estava em aberto.
+**Alternativas:** (1) mudar diretamente PK/schema do D1; (2) resolver offline, manter `search_items` e mapear fontes; (3) continuar dedupe por post.
+**Decisão:** adotar (2). Introduzir `etl/resolver_entidades.py` após `preparar_publicacao.py`: fusão automática só com mesmo nome/cidade/endereço exato com logradouro + número (unidade incluída); similaridade gera candidatos para revisão. Eventos só se fundem com nome/local/datas e horários exatos. Sem endereço comprovado, não fundir automaticamente.
+**Consequências:** saída canônica temporária e `source_entity_map.csv` com múltiplas fontes; não muda `/api/search`, Worker nem schema D1. `D-009` permanece correto para identidade do **post**, mas é substituído como critério de identidade do **card**. Filiais e ocorrências permanecem separadas.
+**Critério de teste:** regressões sintéticas de fusão, filiais, eventos distintos, rejeição e casos ambíguos; testes sem coleta/LLM.
+**Depende de:** D-007, D-008, D-018; fecha parcialmente B-008, pendente promoção para D1 em A5.
+
+### D-023 — IDs estáveis e override humano versionado (aceita para homologação)
+**Contexto:** alterar a fonte primária ou reprocessar novos posts poderia alterar a PK de um card e quebrar resultados já armazenados.
+**Alternativas:** recalcular PK em todo lote; migrar schema D1 imediatamente; fixar mapeamento offline por `entity_id` e `card_id`.
+**Decisão:** registro `etl/entity_registry.json` preserva identidades aprovadas; o resolvedor gera apenas `entity_registry.proposed.json`. `etl/entity_overrides.json` exige motivo/revisor/data para fusões; rejeições explícitas impedem fusão automática. Conflitos de identidades já fixadas encerram o processo sem publicação.
+**Consequências:** mudanças de ID exigem revisão de `source_entity_map.csv` e reconciliação D1 antes de produção. Fonte primária pode mudar sem renumerar a entidade.
+**Critério de teste:** reordenação de lote, adição incremental, execução parcial, rejeição explícita e divergência de registro.
+**Depende de:** D-019; implementação de reconciliação segura fica em A5.
+
+### D-024 — Não alterar runtime e não despublicar na A2 (aceita)
+**Contexto:** a branch `main` corresponde ao commit-base `67981bdd` e o Docker/D1 local foi validado manualmente pelo desenvolvedor. A base de teste não é atual.
+**Alternativas:** adicionar tabela de fontes e migração D1 agora; aplicar automaticamente seed canônico; gerar staging separado e validar.
+**Decisão:** apenas staging offline e documentação de integração com Frente B, sem mudanças em `db/schema.sql`, `db/seed.sql`, Worker, URLs ou prompt Maritaca. Não inferir despublicação a partir de lotes parciais. O seed atual mantém UPSERT, mas NÃO retira IDs antigos após fusões; tratar isso em A5 mediante diff revisado, backup e SQL reversível.
+**Consequências:** deduplicação **não é declarada implantada em produção** nesta fase. Os IDs/remoções devem ser auditados antes de qualquer seed no D1. O catálogo antigo não comprova operação atual de estabelecimentos.
+**Critério de teste:** o novo resolvedor não executa SQL ou chamadas externas; gerar CSV/JSONL e comparar contrato de colunas do seed. Docker/Wrangler local será revalidado no ambiente com Docker.
+**Substitui/atualiza:** D-013 (status de Docker: manual validado em 22/10/2026; não equivale a CI completo), D-019 (reconciliação continua pendente), B-001 (parte de Docker local manual satisfeita, falta teste automatizado).
+
+### D-025 — Bloqueio explícito de publicação por risco temporal/editorial (mantida e ampliada)
+**Contexto:** o estágio canônico não deve recuperar eventos expirados nem elevar automaticamente itens `review`, `hidden` ou promoções.
+**Alternativas:** confiar apenas no arquivo final anterior; revalidar status e ISO com fuso no resolvedor.
+**Decisão:** a nova etapa aceita só `published` de tipo `place`/`event`, e revalida data/hora e término de eventos com timezone. Fusão não constitui aprovação editorial; local ativo deve ser rechecado antes do lançamento.
+**Consequências:** execução antiga ou incompleta não faz novos cards aparecerem; o seed de publicação mantém gate editorial.
+**Critério de teste:** entradas expiradas, status review/hidden, promoção e datas inválidas não saem no catálogo canônico.
+**Depende de:** D-007 e D-008; mantém confiança mínima 0,75 na etapa editorial existente.
+
+### D-026 — Integridade estrita de JSONL como pré-condição do ETL (aceita)
+**Contexto:** legendas reais podem conter `U+2028` dentro das strings JSON. Na auditoria, `str.splitlines()` gerou um falso positivo de corrupção de arquivo, enquanto leitura estrita por `\n` confirmou 1.170 registros brutos e 100 extrações válidas. O raw possui 4 códigos repetidos; arquivos futuros também podem apresentar JSON inválido.
+**Alternativas:** ignorar linhas inválidas; tentar reconstruir legendas por concatenação heurística; validar e bloquear o lote para recuperação auditada.
+**Decisão:** adotar validação prévia estrita em `etl/auditar_jsonl.py`, com contagem de linhas físicas, objetos válidos, chaves ausentes/duplicadas, SHA-256 do arquivo e resumo sem conteúdo privado. JSON inválido e chave ausente bloqueiam; `code` repetido em raw é apenas reportado para dedupe na triagem, enquanto duplicata em etapas deduplicadas bloqueia. Recuperação/re-exportação é procedimento separado sob revisão, não automática.
+**Consequências:** cópias históricas foram confirmadas como íntegras e não exigem reparo; `U+2028` dentro da legenda deve ser preservado. Duplicatas são auditadas sem eliminar evidências do raw. No MVP, manter `read_jsonl()` existente estrito.
+**Critério de teste:** linhas realmente corrompidas, chaves ausentes, duplicatas após triagem e não-objetos causam erro e relatório; duplicatas raw são auditadas sem bloquear; arquivo íntegro com `U+2028` passa.
+**Depende de:** A0; não modifica o coletor já existente.
+
+
 ## Itens não decididos / condições para publicar
 
 - **B-001 (P0):** testar `docker compose build`, `docker compose up`, init/seed D1 e busca na máquina do projeto; Docker não disponível no ambiente de montagem do pacote.
@@ -79,3 +123,28 @@
 ## Como registrar uma nova decisão
 
 Use `D-022 — Título (proposta/aceita/substituída)`, `Data`, `Contexto`, `Alternativas`, `Decisão`, `Consequências`, `Critério de teste` e `Substitui/depende de` quando aplicável.
+
+<!-- Frente A A2.1 homologação histórica 22-10-2026 -->
+## Frente A — Decisões A2.1 (homologação e reconciliação) — 22/10/2026
+
+### D-027 — Candidatos por endereço coincidente, sem fusão automática (aceita para homologação)
+**Contexto:** nos 13 cards historicamente elegíveis, `SPACE FRIENDS` e `Space Friends Park` compartilham o endereço informado Rua Catumbi, 390, mas o limiar de similaridade de nomes (0,84) não os sinalizava (similaridade ~0,839). Compartilhar endereço não prova que seja o mesmo negócio; lojas/atividades diferentes podem coexistir no mesmo prédio.
+**Alternativas:** abaixar limiar geral; unir por endereço; criar motivo de revisão separado para coincidência de endereço.
+**Decisão:** manter a fusão por assinatura forte (nome + endereço com logradouro e número + cidade, quando idênticos), e acrescentar `candidate_basis=same_full_address` aos pares não fundidos com mesmo endereço normalizado completo/cidade, mesmo se nomes diferentes. Um candidato jamais vira fusão sem evidência editorial.
+**Consequência:** aumenta sensibilidade da fila manual sem ampliar falsos merges automáticos. Salas/lojas distintas são preservadas; grandes edifícios podem produzir mais candidatos que exigem triagem.
+**Teste:** `tests/test_a2_homologacao.py`, casos de marca diferente no mesmo endereço e diferentes números de unidade.
+**Depende de:** D-022, D-023.
+
+### D-028 — Reconciliação explicitamente proposta e não executada (aceita)
+**Contexto:** o pipeline histórico produz 13 cards elegíveis; o resolvedor agrupa dois posts de Pescados da Esquina em um card, resultando em 12 entidades. O UPSERT canônico isolado não esconde o ID antigo `6c4ca31679b544b260f84863` caso ele já exista na base anterior.
+**Alternativas:** `DELETE` integral, esconder registros ausentes de lote parcial, migrar PK do D1, ou produzir diff auditável por fonte.
+**Decisão:** criar `etl/auditar_reconciliacao.py` que cruza snapshot anterior + catálogo canônico + `source_entity_map.csv`, valida fonte/ID/tipo e produz apenas `reconciliation_review.csv` e relatório com hashes SHA-256. Não gera SQL, não altera D1 e não trata itens ausentes do lote como despublicação.
+**Consequência:** despublicação de cards fundidos só após confirmação de origem e aprovação humana, comparação com o estado D1 real, backup e plano de reversão. A A5 ainda precisa do executor SQL condicionado a esse gate.
+**Teste:** duplicata proposta, fonte divergente bloqueada, lote parcial sem ocultação e seed idempotente que mantém o card antigo publicado.
+**Depende de:** D-019, D-024; trabalho A5 pendente.
+
+### D-029 — Amostra histórica nunca é prova de atualidade nem de estado do D1 (mantida e explicitada)
+**Contexto:** em 22/10/2026, a reprodução offline com os 100 registros editoriais e 100 extrações históricas resultou em 13 cards elegíveis e 12 entidades canônicas; são 0 eventos elegíveis. Há uma fusão segura por nome+endereço e um par suspeito para revisão. A validação Docker no computador do projeto foi confirmada pelo usuário, mas não foi repetida nesta sessão.
+**Decisão:** relatórios desta etapa são de homologação, não instruções de publicar. Manter `entity_registry.proposed.json` separado da registry aprovada. Antes de qualquer atualização pública, revalidar lugares/ocorrências e comparar com um snapshot real do D1 de homologação, nunca usar simplesmente o catálogo histórico como snapshot remoto.
+**Critério de teste:** relatórios sinalizam `publish_ready=false`; nenhuma ação remota/externa nesta etapa.
+**Depende de:** D-024, D-025; mantém A1/A3/A4/A5/A6 sob seus respectivos gates.

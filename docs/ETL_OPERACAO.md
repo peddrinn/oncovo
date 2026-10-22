@@ -50,3 +50,12 @@ Use `--max-items 10` como piloto, compare as mesmas 10 legendas com extrações 
 O seed utiliza UPSERT e não elimina linhas removidas de um catálogo parcial. Para despublicar um local encerrado, publique `status='hidden'` mediante uma operação editorial explícita. O Worker também protege contra eventos vencidos no momento de cada busca. Recomendação P0 antes de uma rotina recorrente: implantar reconciliação supervisionada de itens removidos do catálogo, não `DELETE` implícito.
 
 **Auditoria histórica reexecutada em 21/10/2026:** 100 itens editoriais, 13 publicados, 38 em revisão (incluindo extrações parciais), 41 expirados, 8 ocultos. Os 13 são lugares e não constituem confirmação de operação atual.
+
+<!-- Frente A A0/A2 22-10-2026 -->
+## Atualização A0/A2 — 22/10/2026
+
+O Docker da aplicação (Astro em `4321`, health Worker em `8787` e buscas no catálogo de teste) foi **validado manualmente pelo desenvolvedor em 22/10/2026**. Registros anteriores de pendência referem-se ao estado anterior dessa validação; isto **não** equivale a suíte Docker/CI integral nem publicação remota.
+
+Antes da triagem, `etl/auditar_jsonl.py` valida a integridade dos lotes JSONL e bloqueia dados corrompidos. Novo gate **offline**: após `preparar_publicacao.py`, rodar `etl/resolver_entidades.py` conforme `docs/RESOLUCAO_ENTIDADES.md`. Ele cria staging com uma entidade por unidade/ocorrência, `source_entity_map.csv`, `merge_candidates.csv`, `entity_registry.proposed.json`, relatório e nenhum efeito no D1. Nenhum seed deve ser gerado a partir do staging sem revisão dos IDs e fusões. `gerar_seed.py` permanece o mesmo; para catálogo já aprovado, usar `--input etl/output/entities/search_items_canonical.jsonl`. Nunca inferir remoções de lote parcial; fluxo de despublicação/reconciliação será A5.
+
+Documentação de contrato: `docs/CONTRATOS_DADOS.md`. O prompt Maritaca e a coleta continuam intactos; não usar `--execute` nem `--remote` sem autorização própria.

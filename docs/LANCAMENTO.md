@@ -39,3 +39,12 @@ Registrar para cada consulta se trouxe um resultado **correto, atualizado e úti
 4. Verificação de estabelecimentos: título/endereço/preço derivados da fonte social precisam de recertificação periódica.
 5. Datas de recorrência e eventos noturnos que terminam no dia seguinte vão para revisão manual, não são inferidos silenciosamente.
 6. A autenticação administrativa, pagamentos, painel, agente e motor vetorial continuam explicitamente fora do MVP.
+
+<!-- Frente A A0/A2 22-10-2026 -->
+## Atualização de estado — 22/10/2026
+
+- **Docker local:** validado **manualmente pelo desenvolvedor**: frontend `localhost:4321`, health do Worker `localhost:8787/api/health`, consultas de demonstração. Substitui a anotação anterior de “pendente” apenas quanto à verificação manual; não implica CI completo.
+- **A0 (contratos):** inventário em `docs/CONTRATOS_DADOS.md`.
+- **A2 (identidade):** implementação conservadora e testes sintéticos/SQLite locais disponíveis em `etl/resolver_entidades.py`, `tests/test_entity_resolution.py`, `tests/test_entity_sqlite.py`. O script só gera staging e não modifica banco de dados.
+- **Bloqueio de produção:** antes do seed canônico revisar candidatos, confirmar estabelecimentos ativos, aprovar registry, auditar remapeamento de IDs e executar reconciliação explícita no D1 local. O UPSERT atual **não** remove cards previamente publicados; A5 permanece pendente.
+- **Sem coleta real, sem chamadas à Maritaca e sem D1 remoto** nesta rodada. A base do repositório é apenas demonstração histórica.
