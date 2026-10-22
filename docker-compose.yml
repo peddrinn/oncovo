@@ -1,0 +1,62 @@
+# Ambiente LOCAL. Nenhuma conexão com D1 remoto é feita por estes serviços.
+name: oncovo
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    working_dir: /app
+    command: ["npx", "wrangler", "dev", "--local", "--ip", "0.0.0.0", "--port", "8787", "--persist-to", ".wrangler/state"]
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - ./worker:/app/worker:ro
+      - ./db:/app/db:ro
+      - ./wrangler.toml:/app/wrangler.toml:ro
+      - ./.wrangler:/app/.wrangler
+    init: true
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    working_dir: /app
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "4321"]
+    ports:
+      - "127.0.0.1:4321:4321"
+    environment:
+      PUBLIC_API_URL: "http://localhost:8787"
+    volumes:
+      - ./web/src:/app/src:ro
+      - ./web/public:/app/public:ro
+      - ./web/astro.config.mjs:/app/astro.config.mjs:ro
+      - ./web/tsconfig.json:/app/tsconfig.json:ro
+    depends_on:
+      - api
+    init: true
+  etl:
+    profiles: ["etl"]
+    build:
+      context: .
+      dockerfile: docker/etl.Dockerfile
+    working_dir: /app
+    entrypoint: ["python"]
+    volumes:
+      - ./etl:/app/etl
+      - ./db:/app/db
+      - ./tests:/app/tests:ro
+    environment:
+      MARITACA_API_KEY: ${MARITACA_API_KEY:-}
+      MARITACA_MODEL: ${MARITACA_MODEL:-sabia-4}
+  collector:
+    profiles: ["collector"]
+    build:
+      context: .
+      dockerfile: docker/collector.Dockerfile
+    working_dir: /app
+    entrypoint: ["python"]
+    volumes:
+      - ./etl:/app/etl
+    environment:
+      INSTAGRAM_USERNAME: ${INSTAGRAM_USERNAME:-}
+      INSTAGRAM_PASSWORD: ${INSTAGRAM_PASSWORD:-}
+      INSTAGRAM_VERIFICATION_CODE: ${INSTAGRAM_VERIFICATION_CODE:-}

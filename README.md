@@ -1,78 +1,83 @@
-# Oncovô? — busca local de experiências em Belo Horizonte
+# Oncovô? — descoberta de lugares e eventos em BH
 
-**MVP:** campo de busca, filtros rápidos, lista de cards, links para a fonte e mapa. Sem login, chatbot, banco vetorial, painel de administração ou páginas individuais. O LLM é utilizado somente no ETL offline.
+**MVP:** busque experiências em Belo Horizonte e veja cards com lugar, endereço, data do evento (quando houver), preço, tags e link para a fonte original. **Sem login e sem chatbot na interface.** O processamento de dados/LLM acontece offline, em Python.
+
+## Esta versão
+
+Atualização de 21/10/2026, feita após revisar o primeiro projeto. Preserva o estilo da home original (logo vermelho, fundo âmbar, linguagem informal), recupera a triagem avançada e as regras rigorosas de extração LLM, e adiciona **ambiente local Docker Compose com D1 emulado**, antes da criação da conta Cloudflare.
+
+**Este pacote é um overlay para o repositório atualizado, não uma cópia Git completa.** Conserve os arquivos não incluídos (principalmente `package-lock.json`, `web/package-lock.json` e `web/public/favicon.svg`). Não copie o ZIP legado com `.env`, `.venv` ou credenciais para dentro do novo projeto.
+
+## Primeira execução local — sem conta Cloudflare
+
+Tenha Docker Engine/Desktop e Compose v2. Rode na raiz do repositório:
+
+```bash
+docker compose config
+docker compose build api web etl
+
+docker compose run --rm api npx wrangler d1 execute oncovo-db --local --persist-to .wrangler/state --file db/schema.sql
+docker compose run --rm api npx wrangler d1 execute oncovo-db --local --persist-to .wrangler/state --file db/seed.sql
+
+docker compose up -d api web
+```
+
+Abra **http://localhost:4321** (site) e **http://localhost:8787/api/health** (status). Opcional: `python scripts/smoke_local.py` para verificar os dois endpoints. Para parar: `docker compose down`. Para ver logs: `docker compose logs -f api web`.
+
+**Tutorial com solução de problemas:** [docs/DOCKER_LOCAL.md](docs/DOCKER_LOCAL.md).
+
+O banco é local/persistente em `.wrangler/state`; `db/seed.sql` contém uma amostra antiga **apenas para testar**, não um catálogo de produção conferido. Cloudflare não precisa ser configurado agora.
+
+## Testes e fluxo do ETL
+
+```bash
+# Sem gastar créditos de IA:
+docker compose run --rm etl -m unittest discover -s tests -v
+
+# Se você colocar seu arquivo histórico em etl/raw/all_posts.jsonl:
+docker compose run --rm etl etl/triagem_avancada.py --input etl/raw/all_posts.jsonl --outdir etl/processed/dia1
+
+# Apenas prévia, sem chamada LLM:
+docker compose run --rm etl etl/extrair_llm.py
+```
+
+**Pipeline completo e coleta opcional:** [docs/ETL_OPERACAO.md](docs/ETL_OPERACAO.md). O coletor usa `instagrapi` de forma **manual e opt-in**; confirme autorização e os termos da plataforma antes de acionar `--execute`.
 
 ## Arquitetura
 
 ```text
-Instagram (dados capturados localmente)
-  → Python: triagem → extração LLM (opcional, Maritaca) → revisão editorial
-  → Python: normalização + verificação temporal → db/seed.sql
-  → D1 (SQLite) → Cloudflare Worker /api/search
-  → Cloudflare Pages (Astro 7 + Tailwind 4)
+Fontes autorizadas / arquivos históricos
+    ↓  (offline, opcional)
+Coleta Python → JSONL bruto (gitignored)
+    ↓
+Triagem avançada + dedupe + relatórios
+    ↓
+Maritaca (opcional) → extração estruturada com evidências
+    ↓
+Validação e APROVAÇÃO HUMANA
+    ↓
+JSONL de publicação → SQL UPSERT não destrutivo
+    ↓
+D1 [local: Wrangler/Miniflare | futuro: Cloudflare]
+    ↓
+Worker read-only /api/search
+    ↓
+Astro/Tailwind → cards de resultados
 ```
 
-## Começo rápido
+## Documentação essencial
 
-Requisitos: Python 3.11+, Node.js >=22.12, conta Cloudflare com D1 existente e Wrangler autenticado. O repositório original já contém `web/public/logo.png`, `web/public/favicon.svg`, `package-lock.json` e `web/package-lock.json`; conserve esses arquivos ao aplicar o pacote.
+- [decisions.md](decisions.md) — histórico e status das decisões; bloqueios para o lançamento.
+- [docs/ANALISE_PRIMEIRA_VERSAO.md](docs/ANALISE_PRIMEIRA_VERSAO.md) — avaliação do legado por arquivo/componente e veredito de migração.
+- [docs/DOCKER_LOCAL.md](docs/DOCKER_LOCAL.md) — passo a passo e diagnóstico do ambiente local.
+- [docs/ETL_OPERACAO.md](docs/ETL_OPERACAO.md) — contratos, revisão, scripts, cuidados com as datas e custo.
+- [docs/PUBLICACAO.md](docs/PUBLICACAO.md) — guia anterior de implantação Cloudflare; só utilize **depois** de aprovar o ambiente local.
+- [docs/SEGURANCA.md](docs/SEGURANCA.md), [docs/LANCAMENTO.md](docs/LANCAMENTO.md) — controles anteriores.
 
-```bash
-npm ci
-npm ci --prefix web
-python -m unittest discover -s tests -v
+## Segurança e estado do lançamento
 
-# Extrações históricas: use o seu arquivo local, nunca publique dados brutos.
-python etl/preparar_publicacao.py \
-  --approved etl/items_publicaveis.jsonl \
-  --extractions /CAMINHO/extracoes_validas_100.jsonl \
-  --raw /CAMINHO/all_posts.jsonl
-python etl/gerar_seed.py
-
-# Primeiro no D1 LOCAL (usa arquivos db/schema.sql e db/seed.sql)
-npx wrangler d1 execute oncovo-db --local --file db/schema.sql
-npx wrangler d1 execute oncovo-db --local --file db/seed.sql
-npm run dev
-```
-
-Em outro terminal:
-
-```bash
-cd web
-cp .env.example .env
-npm run dev
-```
-
-Acesse `http://localhost:4321`. Se a API responder em outro endereço, ajuste `PUBLIC_API_URL` em `web/.env` com a **URL base**, por exemplo `http://localhost:8787` (sem `/api/search`).
-
-**Produção:** leia [`docs/PUBLICACAO.md`](docs/PUBLICACAO.md) antes de executar QUALQUER comando `--remote`. O seed inclui só as aprovações e eventos válidos no momento em que foi gerado; reexecute o ETL antes de subir a base.
-
-## Estrutura
-
-- `etl/triagem.py`: deduplica por código do post e cria fila de legendas suficientes.
-- `etl/extrair_llm.py`: processa até 10 posts por execução (uma requisição por post); por padrão é *dry run* (sem custo), a flag `--execute` efetua chamadas reais ao modelo.
-- `etl/preparar_publicacao.py`: junta extração e aprovação, aplica regras de produto, gera auditoria CSV e registros D1.
-- `etl/gerar_seed.py`: IDs reproduzíveis e UPSERT não destrutivo.
-- `db/schema.sql`, `db/seed.sql`: tabelas e dados locais de publicação, mais metadados da versão.
-- `worker/index.ts`: API pública (`/api/search`, `/api/suggestions`, `/api/health`).
-- `web/`: Astro estático, Tailwind 4, cards de texto e links seguros.
-- `tests/`: validação de pipeline, SQL e comportamento do Worker.
-- `docs/`: implantação, decisões e itens pendentes.
-
-## Regras de produto e segurança
-
-- Só itens aprovados (`published`) e com confiança mínima podem entrar no seed.
-- Eventos somente com datas ISO defensáveis e não expiradas; **promoções fora da busca**.
-- `starts_at` para lugares é sempre `NULL`: horário de funcionamento não é evento.
-- D1 fica atrás do Worker e não é embarcado no HTML.
-- SQL parametrizado, limite de paginação, sem endpoints públicos de inserção, CORS restrito a origens configuradas, saída textual segura no DOM.
-- A busca usa normalização, sinônimos e ranking básico, sem custos de LLM por requisição.
-- O endpoint de health divulga versão da aplicação e hash do catálogo publicado.
-- A única base de teste fornecida foi gerada em junho de 2026 e precisa de checagem de estabelecimentos antes de lançamento oficial.
-
-## Auditoria inicial com o material disponível em 20/10/2026
-
-Dos 100 itens editoriais: **13 itens publicáveis (lugares), 32 em revisão, 41 expirados, 14 ocultados**. O pacote inclui `etl/output/revisao.csv` e um seed para os 13 lugares elegíveis; não atesta que todos continuam abertos. Nenhum evento histórico foi mantido como futuro.
-
-## Limites declarados
-
-Não há scraping automático em produção, deduplicação semântica entre posts diferentes do mesmo lugar, inventário atualizado de estabelecimentos nem telemetria personalizada. Cloudflare Web Analytics pode ser habilitado na interface de Pages para page views; no momento, **não** mede cliques nem pesquisas. Revisar `docs/LANCAMENTO.md` antes de publicar. O acesso à conta de Cloudflare e às configurações do domínio deve ser feito pelo operador do projeto; nenhuma operação remota foi executada nesta entrega.
+1. O arquivo histórico enviado contém segredos em `.env` e scripts de teste. **Rotacione tudo que ainda é válido.** Nenhum segredo foi incluído na entrega.
+2. Nunca use `--remote` durante o desenvolvimento local; o `wrangler.toml` deste pacote traz ID placeholder. Ao criar a conta D1 definitiva, substitua esse UUID com um ID obtido no painel/CLI.
+3. A API usa SELECT parametrizado; o frontend não contém a base completa. O `Origin` de CORS não é controle de autenticação.
+4. A publicação de lugares e eventos exige confirmação editorial recente. Eventos de junho de 2026 não são tratados como atuais.
+5. **Validação realizada aqui:** testes Python e TypeScript (mocks), triagem avançada sobre o arquivo histórico. **Validação não realizada aqui:** build/execução reais do Docker, navegação visual/tempo de resposta no navegador e integração com conta Cloudflare. Elas estão no checklist de `docs/DOCKER_LOCAL.md`.

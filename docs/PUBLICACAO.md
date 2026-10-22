@@ -1,10 +1,10 @@
 # Publicação segura — passo a passo
 
-Este roteiro pressupõe o repositório GitHub original `peddrinn/oncovo`, já com o D1 `oncovo-db` especificado em `wrangler.toml`. **Não rode `db/schema.sql` antigo com `DROP TABLE`** e não utilize o gerador de seed antigo com `DELETE FROM search_items`.
+**Pré-condição:** passar pelo checklist em [`DOCKER_LOCAL.md`](DOCKER_LOCAL.md) antes de criar/usar uma conta Cloudflare. A versão deste pacote usa `database_id` fictício `00000000-0000-0000-0000-000000000000` para testes locais: **não** faça qualquer `--remote` antes de criar o D1 real e substituir este UUID. **Não rode o schema antigo com `DROP TABLE`**, nem o gerador de seed antigo com `DELETE FROM search_items`.
 
 ## 1. Preparação e commit
 
-Aplique o conteúdo deste pacote por cima da raiz do clone original, mantendo `web/public/logo.png`, `web/public/favicon.svg`, `LICENSE` e os dois `package-lock.json`. Faça revisão de `git diff` antes do commit. A pasta `.wrangler/` está versionada no repositório original e deve ser retirada do índice:
+Aplique o conteúdo deste pacote por cima da raiz do clone original, preservando `web/public/favicon.svg`, `LICENSE` e os dois `package-lock.json` (a logo horizontal passa a vir deste pacote). Faça revisão de `git diff` antes do commit. A pasta `.wrangler/` está versionada no repositório original e deve ser retirada do índice:
 
 ```bash
 git rm -r --cached .wrangler
@@ -15,6 +15,8 @@ git status
 Como esses arquivos já estiveram públicos, confira o histórico para eventuais dados sensíveis. Se alguma credencial aparecer, revogue-a; `.gitignore` não remove o histórico antigo.
 
 ## 2. Validação local (antes de publicar)
+
+**Preferir o ambiente Docker reproduzível de [`DOCKER_LOCAL.md`](DOCKER_LOCAL.md)**. Os comandos abaixo são uma alternativa sem Docker, quando Node/Python já estiverem instalados.
 
 ```bash
 npm ci
@@ -30,15 +32,20 @@ npx wrangler dev
 
 Em outro terminal, na pasta `web`: `cp .env.example .env && npm run dev`. Faça pelo menos 20 buscas reais e testes no celular. Não execute `npm ci` se você modificar `package.json` sem atualizar primeiro os respectivos lockfiles via `npm install`.
 
-## 3. Backup e importação no D1 remoto
+## 3. Criar conta Cloudflare e D1 remoto (somente DEPOIS de validar Docker)
 
-Somente após conferir que a conta Cloudflare contém o D1 correspondente ao ID em `wrangler.toml` e que o seed está revisado:
+1. Crie sua conta Cloudflare, vincule GitHub e instale/autentique Wrangler localmente quando estiver pronto para publicar.
+2. Crie o D1 definitivo com `npx wrangler d1 create oncovo-db` e copie o UUID retornado para `database_id` em `wrangler.toml` (substituindo **o placeholder**).
+3. Confirme a conta e o banco com `npx wrangler d1 info oncovo-db` antes de qualquer importação.
+4. Se o D1 estiver NOVO/vazio, você pode pular o backup inicial. Se tiver dados importantes, exporte e guarde backup **fora do Git**.
+
+Somente após revisar a base e confirmar que está operando no projeto correto:
 
 ```bash
 npx wrangler login
 npx wrangler d1 info oncovo-db
-npx wrangler d1 export oncovo-db --remote --output=./oncovo-backup.sql
-# Confira esse backup e não o envie ao Git.
+# Se já houver dados remotos: npx wrangler d1 export oncovo-db --remote --output=./oncovo-backup.sql
+# Faça backup antes de modificar um banco existente; não envie o arquivo ao Git.
 npx wrangler d1 execute oncovo-db --remote --file db/schema.sql
 npx wrangler d1 execute oncovo-db --remote --file db/seed.sql
 npx wrangler d1 execute oncovo-db --remote --command "SELECT status, type, count(*) FROM search_items GROUP BY status,type;"

@@ -2,14 +2,15 @@
 
 | Verificação | Estado deste pacote | Responsável operacional |
 |---|---|---|
-| Python: triagem, extração opcional, revisão, seed | Implementado e testado com os arquivos recebidos | Projeto |
+| Python: triagem, extração opcional, revisão, seed | Implementado; 12 testes Python + 10 verificações Worker passaram no ambiente de montagem | Projeto |
 | Eventos vencidos bloqueados | Implementado no ETL e API | Projeto |
 | Busca/cors/limites/ranking básicos | Implementado e parcialmente testado via mock + SQLite | Projeto |
 | Astro e CSS integrados | Implementado, **build Astro não executado neste ambiente** | Dev/CI |
+| Docker Compose local (API + Astro + D1) iniciado e testado | **Pendente: execução no computador do projeto** | Dev |
 | D1 remoto migrado e conferido | **Não realizado** | Operador Cloudflare |
 | Worker implantado e com origem Pages autorizada | **Não realizado** | Operador Cloudflare |
 | Pages implantado com PUBLIC_API_URL | **Não realizado** | Operador Cloudflare |
-| Marca original (`logo.png`) | Preservar arquivo no repositório existente | Dev |
+| Marca original (`logo.png`) | Arte horizontal transparente original recuperada; confirmar no navegador | Dev |
 | Páginas legais e contatos revisados | **Pendente: textos são modelos iniciais** | Responsável pelo projeto |
 | 13 lugares da base revistos quanto à operação atual | **Pendente** | Revisão editorial |
 | Eventos recentes para tornar a busca temporal útil | **Pendente** | Coleta/ETL |

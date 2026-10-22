@@ -1,0 +1,2 @@
+# Dependência isolada para coleta manual. Após o primeiro build, congele as versões no ambiente validado.
+instagrapi>=2.0,<3

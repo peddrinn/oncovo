@@ -44,7 +44,8 @@ def transform(item:dict, ext:dict|None, now=None)->tuple[dict|None,str,str]:
     manual=str(item.get('publish_status') or 'review')
     status=manual if manual in ('published','review','expired','hidden') else 'review'
     reason='aprovado editorialmente' if status=='published' else f'estado editorial: {status}'
-    if ext.get('extraction_status') != 'ok':status,reason='hidden','extração descartada'
+    if ext.get('extraction_status') == 'partial':status,reason='review','extração parcial requer revisão manual'
+    elif ext.get('extraction_status') != 'ok':status,reason='hidden','extração descartada'
     elif item.get('content_type') and item.get('content_type') != kind and status=='published':
         status,reason='review','divergência de tipo entre editorial e extração'
     elif kind=='promotion':status,reason='hidden','promoção excluída do MVP'
@@ -86,7 +87,9 @@ def transform(item:dict, ext:dict|None, now=None)->tuple[dict|None,str,str]:
                   f'Em {neighborhood}' if neighborhood else '',
                   f'Local: {venue}' if kind=='event' and venue else '']
     description='. '.join(v.strip(' .') for v in desc_parts if v.strip(' .'))[:280]
-    source=str(item.get('source_profile') or ext.get('source_profile') or 'Instagram').strip()[:70]
+    source_raw=item.get('source_profile') or ext.get('source_profile') or 'Instagram'
+    if isinstance(source_raw, list): source_raw=source_raw[0] if source_raw else 'Instagram'
+    source=str(source_raw).strip()[:70]
     normalized=search_index(title,subtitle,description,neighborhood,address,venue,
                             category,subcategories,tags,item.get('search_text'))
     return {

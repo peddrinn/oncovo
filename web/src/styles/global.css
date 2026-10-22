@@ -7,3 +7,14 @@ body { background: #fffbeb; color: #222; }
 .result-card { background:#fff; border:1px solid #fed7aa; border-radius:1.05rem; padding:1.25rem; box-shadow:0 1px 4px rgb(120 80 20 / .08); }
 .result-card:hover { box-shadow:0 6px 18px rgb(120 80 20 / .09); }
 .clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+/* Identidade visual recuperada do MVP 2024: amber-50, logo vermelha, cards quentes. */
+body { background: radial-gradient(ellipse at 50% -14%, #fff0d6 0%, #fffbeb 46%, #fffbeb 100%); }
+.disco-header { text-align:center; }
+.discovery-tile { background:rgba(255,255,255,.74); border:1px solid #fed7aa; border-radius:1rem; padding:1.1rem; text-align:left; box-shadow:0 2px 8px rgb(140 70 30 / .06); cursor:pointer; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.discovery-tile:hover { border-color:#dc2626; box-shadow:0 8px 24px rgb(140 70 30 / .11); transform:translateY(-2px); }
+.discovery-tile:focus-visible { outline:3px solid #dc2626; outline-offset:3px; }
+.tile-action { display:block; margin-top:.8rem; color:#b91c1c; font-weight:800; font-size:.8rem; text-transform:uppercase; letter-spacing:.025em; }
+.result-card { background:#fffdf9; border:1px solid #f5d3b0; border-left:4px solid #b91c1c; border-radius:1rem; padding:1.25rem 1.4rem; box-shadow:0 3px 14px rgb(120 80 20 / .075); }
+.result-card:hover { box-shadow:0 9px 26px rgb(120 80 20 / .12); }
+@media (prefers-reduced-motion:reduce) { .discovery-tile { transition:none; } .discovery-tile:hover {transform:none;} }

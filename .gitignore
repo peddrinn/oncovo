@@ -24,3 +24,10 @@ etl/extracoes_validas_*.jsonl
 etl/fila_*.jsonl
 # Arquivos gerados e atualizáveis — não subir por engano
 # db/seed.sql pode ser gerado localmente para publicação revisada
+# Desenvolvimento Docker e dados sensíveis
+.env
+.env.*
+!.env.example
+*.session
+etl/.sessions/
+*.bak

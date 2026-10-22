@@ -2,11 +2,11 @@ name = "oncovo-api"
 main = "worker/index.ts"
 compatibility_date = "2026-10-01"
 
-# Banco D1 existente do projeto. Confira a conta antes de aplicar migrations.
+# Placeholder para D1 LOCAL sem conta. Antes do deploy, criar D1 real e SUBSTITUIR o UUID.
 [[d1_databases]]
 binding = "DB"
 database_name = "oncovo-db"
-database_id = "52647cc2-2805-4aab-acf3-ac720f675aa9"
+database_id = "00000000-0000-0000-0000-000000000000"
 
 [vars]
 # Inserir a origem exata do Pages na Cloudflare (sem barra final) antes do deploy.
